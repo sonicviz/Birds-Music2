@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebGPU Boids</title>
+  <link rel="modulepreload" crossorigin href="/Birds-Music2/assets/vendor-BcTuOTYG-BWlzFxcR.js">
+  <script type="module" crossorigin src="/Birds-Music2/assets/index-DbBnVmiM.js"></script>
+  <link rel="stylesheet" crossorigin href="/Birds-Music2/assets/index-CrpANK-W.css">
+</head>
+
+<body>
+  <div id="loader">loading...</div>
+  <div id="ui">
+    <div id="controlsHeader" class="controls-header">
+      <span>Controls</span>
+      <span id="collapseIcon">▼</span>
+    </div>
+    <div id="controlsContent" class="controls-content">
+      <div class="control-section">
+        <div id="fpsText" style="font-weight: bold;">FPS: 00</div>
+        <div id="boidText" style="font-weight: bold;">Boids: 0</div>
+        <input type="range" id="boidSlider" min="5" max="26" value="1" step="0.01" style="width: 100%;" />
+      </div>
+
+      <div class="control-section">
+        <h3>Mode</h3>
+        <div>
+          <label><input class="modeRadio" type="radio" id="radio2D" name="mode" value="2D" /> 2D</label>
+          <label><input class="modeRadio" type="radio" id="radio3D" name="mode" value="3D" checked /> 3D</label>
+        </div>
+        <div id="options2d">
+          <label><input type="checkbox" id="avoidToggle" /> Avoid Mouse</label>
+        </div>
+        <div id="options3d">
+          </br>
+          <label for="algorithmSelect">Flocking Algorithm:</label>
+          <select id="algorithmSelect">
+            <option value="simple">Simple Boids</option>
+            <option value="birdsmusic">BirdMusic Advanced</option>
+            <option value="hybrid">Hybrid (Babylon + BirdMusic)</option>
+          </select>
+
+          <div style="margin: 10px 0;">
+            <label for="rangeDistancePresetSelect">Visual Range & Distance Presets:</label>
+            <select id="rangeDistancePresetSelect">
+              <option value="custom">Custom Settings</option>
+              <option value="tight_swarms_1">Tight Swarms (Rating: 1)</option>
+              <option value="balanced_flocking_1">Balanced Flocking (Rating: 1)</option>
+              <option value="natural_flocking_2">Natural Flocking (Rating: 2)</option>
+              <option value="realistic_bird_2">Realistic Bird Behavior (Rating: 2)</option>
+              <option value="flowing_formations_3">Flowing Formations (Rating: 3)</option>
+              <option value="spread_groups_3">Spread Out Groups (Rating: 3)</option>
+              <option value="loose_formations_3">Loose Formations (Rating: 3)</option>
+              <option value="wide_awareness_3">Wide Awareness (Rating: 3)</option>
+              <option value="massive_flocks_4">Massive Flocks (Rating: 4)</option>
+              <option value="very_loose_4">Very Loose Groups (Rating: 4)</option>
+            </select>
+          </div>
+
+          <div style="margin: 10px 0;">
+            <label for="behaviorPresetSelect">Behavior Presets (BirdMusic Style):</label>
+            <select id="behaviorPresetSelect">
+              <option value="custom">Custom Behavior</option>
+              <option value="starlings">Starlings Murmuration</option>
+              <option value="geese">Migrating Geese</option>
+              <option value="sparrows">Sparrow Flock</option>
+              <option value="swallows">Swallows Hunting</option>
+              <option value="pigeons">City Pigeons</option>
+              <option value="seagulls">Seagulls Feeding</option>
+              <option value="crows">Crow Intelligence</option>
+              <option value="finches">Finch Swarm</option>
+              <option value="eagles">Eagles Soaring</option>
+              <option value="sandpipers">Sandpiper Shore</option>
+              <option value="69">69</option>
+              <option value="gold">Gold</option>
+              <option value="shodo">Shodo</option>
+              <option value="jellyfish">Jellyfish</option>
+              <option value="smokey">Smokey</option>
+            </select>
+            <div style="margin-top: 5px;">
+              <input type="text" id="presetNameInput" placeholder="Enter preset name..." style="width: 120px; margin-right: 5px;" />
+              <button id="savePresetButton" type="button" style="margin-right: 5px;">Save Preset</button>
+              <button id="deletePresetButton" type="button">Delete Preset</button>
+            </div>
+          </div>
+
+          <div style="margin: 10px 0;">
+            <label><input type="checkbox" id="avoidToggle3d" /> Avoid Mouse (3D)</label>
+            <div id="mouseControls3d" style="margin-left: 20px; margin-top: 5px;">
+              <div class="control-row" id="mouseStrengthRow"><label>Mouse Strength:</label><input type="range"
+                  id="mouseStrengthSlider" min="0" max="200" step="1" value="100" /><span
+                  id="mouseStrengthValue">100</span></div>
+              <div class="control-row" id="mouseRadiusRow"><label>Mouse Radius:</label><input type="range"
+                  id="mouseRadiusSlider" min="0.1" max="10" step="0.1" value="2" /><span id="mouseRadiusValue">2</span>
+              </div>
+              <div style="margin-top: 5px;">
+                <button id="resetMouseButton" type="button" style="margin-right: 5px;">Reset Mouse</button>
+                <button id="randomizeMouseButton" type="button">Randomize Mouse</button>
+              </div>
+            </div>
+          </div>
+          <div id="birdsMusicControls" style="margin: 10px 0;">
+            <h4>BirdMusic Settings</h4>
+            <div class="control-row"><label>Center Attraction:</label><input type="range" id="centerAttractionSlider"
+                min="0" max="20" step="0.1" value="5" /><span id="centerAttractionValue">5</span></div>
+            <div class="control-row"><label>Freedom:</label><input type="range" id="freedomSlider" min="0" max="1"
+                step="0.01" value="0.75" /><span id="freedomValue">0.75</span></div>
+            <label><input type="checkbox" id="freedomEnabledToggle" checked /> Enable Freedom</label>
+          </div>
+          </br>
+          <label for="meshTypeSelect">Mesh:</label>
+          <select id="meshTypeSelect">
+            <option value="triangle">Triangle</option>
+            <option value="pyramid">Pyramid</option>
+            <option value="babylonBird" selected>Babylon Bird</option>
+          </select> </br>
+          <label for="materialTypeSelect">Material:</label>
+          <select id="materialTypeSelect">
+            <option value="shader">Shader Material</option>
+            <option value="metallic">PBR Metallic</option>
+            <option value="plastic">PBR Plastic</option>
+            <option value="glass">PBR Glass</option>
+            <option value="ceramic">PBR Ceramic</option>
+          </select>
+          </br>
+          <div class="control-section">
+            <h3>Material</h3>
+            <div class="control-row"><label>Color:</label><input type="color" id="materialColorPicker"
+                value="#cccccc" />
+            </div>
+            <div class="control-row"><label>Metallic:</label><input type="range" id="metallicSlider" min="0" max="1"
+                step="0.01" value="0.5" /><span id="metallicValue">0.5</span></div>
+            <div class="control-row"><label>Roughness:</label><input type="range" id="roughnessSlider" min="0.01"
+                max="1" step="0.01" value="0.5" /><span id="roughnessValue">0.5</span></div>
+            <div class="control-row"><label>Ambient:</label><input type="range" id="ambientSlider" min="0" max="1"
+                step="0.01" value="0.15" /><span id="ambientValue">0.15</span></div>
+            <div class="control-row"><label>Transparency:</label><input type="range" id="transparencySlider" min="0"
+                max="1" step="0.01" value="1" /><span id="transparencyValue">1</span></div>
+            <button id="randomizeMaterialColorButton" type="button">Randomize Color</button>
+            
+            <h4>Wing Animation</h4>
+            <div class="control-row"><label>Flap Speed:</label><input type="range" id="wingFlapSpeedSlider" min="1" max="30"
+                step="0.5" value="18" /><span id="wingFlapSpeedValue">18</span></div>
+            <div class="control-row"><label>Flap Amplitude:</label><input type="range" id="wingFlapAmplitudeSlider" min="0" max="0.2"
+                step="0.005" value="0.2" /><span id="wingFlapAmplitudeValue">0.2</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="control-section">
+        <h3>Simulation</h3>
+        <div class="control-row"><label>Edge Margin:</label><input type="range" id="edgeMarginSlider" min="0" max="2"
+            step="0.01" value="0.5" /><span id="edgeMarginValue">0.5</span></div>
+        <div class="control-row"><label>Max Speed:</label><input type="range" id="maxSpeedSlider" min="0.1" max="10"
+            step="0.01" value="2" /><span id="maxSpeedValue">2</span></div>
+        <div class="control-row"><label>Visual Range:</label><input type="range" id="visualRangeSlider" min="0.1"
+            max="2" step="0.01" value="0.5" /><span id="visualRangeValue">0.5</span></div>
+        <div class="control-row"><label>Min Distance:</label><input type="range" id="minDistanceSlider" min="0.01"
+            max="1" step="0.01" value="0.15" /><span id="minDistanceValue">0.15</span></div>
+        <div class="control-row"><label>Cohesion:</label><input type="range" id="cohesionFactorSlider" min="0" max="10"
+            step="0.1" value="2" /><span id="cohesionFactorValue">2</span></div>
+        <div class="control-row"><label>Alignment:</label><input type="range" id="alignmentFactorSlider" min="0"
+            max="10" step="0.1" value="5" /><span id="alignmentFactorValue">5</span></div>
+        <div class="control-row"><label>Separation:</label><input type="range" id="separationFactorSlider" min="0"
+            max="10" step="0.1" value="1" /><span id="separationFactorValue">1</span></div>
+
+        <button id="resetParamsButton" type="button">Reset Parameters</button>
+        <button id="randomizeParamsButton" type="button">Randomize Parameters</button>
+      </div>
+
+      <div class="control-section">
+        <h3>Camera</h3>
+        <div id="cameraPreset3d">
+          <label for="cameraPresetSelect">Preset:</label>
+          <select id="cameraPresetSelect">
+            <option value="default">Default</option>
+            <option value="top">Top</option>
+            <option value="bottom">Bottom</option>
+            <option value="left">Left</option>
+            <option value="right">Right</option>
+            <option value="front">Front</option>
+            <option value="back">Back</option>
+            <option value="top-front-right">Top-Front-Right</option>
+            <option value="top-front-left">Top-Front-Left</option>
+            <option value="top-back-right">Top-Back-Right</option>
+            <option value="top-back-left">Top-Back-Left</option>
+          </select>
+        </div>
+        <div class="control-row">
+          <label>Zoom:</label>
+          <input type="range" id="cameraZoomSlider" min="1" max="20" step="0.1" value="5">
+        </div>
+        <div style="margin: 10px 0;">
+          <label><input type="checkbox" id="autoRotateToggle" /> Auto Rotate</label>
+          <div class="control-row" style="margin-left: 20px; margin-top: 5px;">
+            <label>Speed:</label><input type="range" id="autoRotateSpeedSlider" min="0.1" max="2" step="0.1"
+              value="0.1" /><span id="autoRotateSpeedValue">0.1</span>
+          </div>
+        </div>
+        <button id="resetCameraButton" type="button">Reset Camera</button>
+      </div>
+
+      <div class="control-section">
+        <h3>Lighting</h3>
+        <button id="randomizeLightsButton" type="button">Randomize Positions</button>
+        <button id="randomizeColorsButton" type="button">Randomize All Colors</button>
+        <button id="randomizeLightColorsButton" type="button">Randomize Colors</button>
+        <label><input type="checkbox" id="showLightDebug" /> Show Debug</label>
+
+        <h4>Light 1</h4>
+        <div class="control-row"><label>X:</label><input type="range" id="light1XSlider" min="-2" max="2" step="0.1"
+            value="-1" /><span id="light1XValue">-1</span></div>
+        <div class="control-row"><label>Y:</label><input type="range" id="light1YSlider" min="-2" max="2" step="0.1"
+            value="-1" /><span id="light1YValue">-1</span></div>
+        <div class="control-row"><label>Z:</label><input type="range" id="light1ZSlider" min="-2" max="2" step="0.1"
+            value="-1" /><span id="light1ZValue">-1</span></div>
+        <div class="control-row"><label>Intensity:</label><input type="range" id="light1IntensitySlider" min="0" max="3"
+            step="0.1" value="1" /><span id="light1IntensityValue">1</span></div>
+        <div class="control-row"><label>Color:</label><input type="color" id="light1ColorPicker" value="#ffffff" />
+        </div>
+
+        <h4>Light 2</h4>
+        <div class="control-row"><label>X:</label><input type="range" id="light2XSlider" min="-2" max="2" step="0.1"
+            value="1" /><span id="light2XValue">1</span></div>
+        <div class="control-row"><label>Y:</label><input type="range" id="light2YSlider" min="-2" max="2" step="0.1"
+            value="1" /><span id="light2YValue">1</span></div>
+        <div class="control-row"><label>Z:</label><input type="range" id="light2ZSlider" min="-2" max="2" step="0.1"
+            value="1" /><span id="light2ZValue">1</span></div>
+        <div class="control-row"><label>Intensity:</label><input type="range" id="light2IntensitySlider" min="0" max="3"
+            step="0.1" value="0.5" /><span id="light2IntensityValue">0.5</span></div>
+        <div class="control-row"><label>Color:</label><input type="color" id="light2ColorPicker" value="#ffaa80" />
+        </div>
+      </div>
+
+      <div class="control-section">
+        <h3>Post-Processing</h3>
+        <div class="control-row"><label>Screen Blur:</label><input type="range" id="blurIntensitySlider" min="0"
+            max="10" step="0.1" value="0" /><span id="blurIntensityValue">0</span></div>
+        <!-- <div class="control-row"><label>Bloom:</label><input type="range" id="bloomIntensitySlider" min="0" max="3" step="0.1" value="0" /><span id="bloomIntensityValue">0</span></div> -->
+        <!-- <div class="control-row"><label>Motion Blur:</label><input type="range" id="motionBlurSlider" min="0" max="1" step="0.01" value="0" /><span id="motionBlurValue">0</span></div> -->
+        <button id="resetPostProcessingButton" type="button">Reset Effects</button>
+      </div>
+
+      <div class="control-section">
+        <h3>Background</h3>
+        <div class="control-row"><label>Top Color:</label><input type="color" id="skyTopColorPicker" value="#4477ff" />
+        </div>
+        <div class="control-row"><label>Bottom Color:</label><input type="color" id="skyBottomColorPicker"
+            value="#ffffff" /></div>
+        <div class="control-row"><label>Intensity:</label><input type="range" id="skyIntensitySlider" min="0.1" max="3"
+            step="0.1" value="1" /><span id="skyIntensityValue">1</span></div>
+        <button id="randomizeSkyButton" type="button">Randomize Sky</button>
+      </div>
+
+    </div>
+  </div>
+  
+  <!-- Audio Panel - Bottom Left (BirdsMusic Style) -->
+  <div id="audio-panel">
+    <div id="audio-controls" class="collapsed">
+      <h3>Audio Controls</h3>
+      <button id="toggle-audio">Play Music</button>
+      
+      <div class="control-label">Main Volume:</div>
+      <div id="volume-control">
+        <input type="range" id="volume-slider" min="0" max="100" value="70" title="Adjust volume" />
+      </div>
+
+      <div class="control-label">Melody Volume:</div>
+      <div id="melody-volume-control">
+        <input type="range" id="melody-volume-slider" min="0" max="100" value="70" title="Adjust melody volume" />
+      </div>
+
+      <div class="control-label">Synth Layer Volume:</div>
+      <div id="synth-volume-control">
+        <input type="range" id="synth-volume-slider" min="0" max="100" value="70" title="Adjust synth layer volume" />
+      </div>
+
+      <div class="control-label">Pad Volume:</div>
+      <div id="pad-volume-control">
+        <input type="range" id="pad-volume-slider" min="0" max="100" value="70" title="Adjust pad volume" />
+      </div>
+
+      <div class="control-label">Reverb Amount:</div>
+      <div id="reverb-control">
+        <input type="range" id="reverb-slider" min="0" max="100" value="100" title="Adjust reverb amount" />
+      </div>
+
+      <div class="control-label">Wind/Pointer Volume:</div>
+      <div id="wind-volume-control">
+        <input type="range" id="wind-volume-slider" min="0" max="100" value="50" title="Adjust wind volume" />
+      </div>
+
+      <div class="control-label">Flock Whoosh Volume:</div>
+      <div id="whoosh-volume-control">
+        <input type="range" id="whoosh-volume-slider" min="0" max="100" value="50" title="Adjust flock whoosh volume" />
+      </div>
+
+      <div class="control-label">Soundscape:</div>
+      <select id="soundscape-select" title="Select soundscape">
+        <option value="ambient">Ambient Dreamscape</option>
+        <option value="forest">Forest Ambience</option>
+        <option value="ocean">Ocean Waves</option>
+        <option value="night">Night Meditation</option>
+        <option value="meditation">Deep Meditation</option>
+      </select>
+    </div>
+    <button id="toggle-panel">Audio Controls</button>
+  </div>
+  
+  <canvas id="renderCanvas" touch-action="none"> </canvas>
+  <script>
+    // Show/hide camera preset dropdown and mouse interaction controls based on mode
+    function updateCameraPresetDisplay() {
+      var presetDiv = document.getElementById('cameraPreset3d');
+      var mouseControls3d = document.getElementById('mouseControls3d');
+      var mode2d = document.getElementById('radio2D');
+      var mode3d = document.getElementById('radio3D');
+      if (!presetDiv || !mode2d || !mode3d) return;
+      if (mode3d.checked) {
+        presetDiv.style.display = '';
+        if (mouseControls3d) mouseControls3d.style.display = '';
+      } else {
+        presetDiv.style.display = 'none';
+        if (mouseControls3d) mouseControls3d.style.display = 'none';
+      }
+    }
+
+    // Controls collapse/expand functionality
+    function toggleControls() {
+      var ui = document.getElementById('ui');
+      var collapseIcon = document.getElementById('collapseIcon');
+      if (!ui || !collapseIcon) return;
+
+      var isCollapsed = ui.classList.contains('collapsed');
+      if (isCollapsed) {
+        ui.classList.remove('collapsed');
+        collapseIcon.textContent = '▼';
+      } else {
+        ui.classList.add('collapsed');
+        collapseIcon.textContent = '▶';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+      updateCameraPresetDisplay();
+      // Also run after a short delay to catch any async UI changes
+      setTimeout(updateCameraPresetDisplay, 100);
+
+      // Add event listeners
+      document.getElementById('radio2D').addEventListener('change', updateCameraPresetDisplay);
+      document.getElementById('radio3D').addEventListener('change', updateCameraPresetDisplay);
+
+      // Add click listener to controls header
+      var controlsHeader = document.getElementById('controlsHeader');
+      if (controlsHeader) {
+        controlsHeader.addEventListener('click', toggleControls);
+      }
+
+      // Initialize transparency value display
+      var transparencySlider = document.getElementById('transparencySlider');
+      var transparencyValue = document.getElementById('transparencyValue');
+      if (transparencySlider && transparencyValue) {
+        transparencyValue.innerText = transparencySlider.value;
+      }
+
+      // Initialize post-processing value displays
+      var blurSlider = document.getElementById('blurIntensitySlider');
+      var blurValue = document.getElementById('blurIntensityValue');
+      if (blurSlider && blurValue) {
+        blurValue.innerText = blurSlider.value;
+      }
+
+      // var bloomSlider = document.getElementById('bloomIntensitySlider');
+      // var bloomValue = document.getElementById('bloomIntensityValue');
+      // if (bloomSlider && bloomValue) {
+      //   bloomValue.innerText = bloomSlider.value;
+      // }
+
+      // var motionSlider = document.getElementById('motionBlurSlider');
+      // var motionValue = document.getElementById('motionBlurValue');
+      // if (motionSlider && motionValue) {
+      //   motionValue.innerText = motionSlider.value;
+      // }
+    });
+  </script>
+</body>
+
+</html>
